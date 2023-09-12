@@ -404,6 +404,10 @@ async function buildCalendarView(date, stack, settings2) {
         const callbackUrl = createUrl_default(day, month, date, settings2);
         if (j > 0) dayStack.url = callbackUrl;
       }
+      // here
+      console.log(`calendar[i][j], ${day}, ${month}`);
+
+      console.log(`calendar[i][j], ${calendar[i][j]}`);
       if (calendar[i][j] === `${date.getMonth()}/${date.getDate()}`) {
         if (settings2.markToday) {
           const highlightedDate = createDateImage_default(day, {
@@ -433,7 +437,8 @@ async function buildCalendarView(date, stack, settings2) {
             ? settings2.weekendDates
             : settings2.weekdayTextColor,
           intensity: settings2.showEventCircles
-            ? eventCounts.get(calendar[i][j]) * intensity
+            ? // test here
+              eventCounts.get(calendar[i][j]) * 0.5
             : 0,
           toFullSize,
         });
