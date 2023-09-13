@@ -1,5 +1,38 @@
 const fs = require("fs");
-
+const params = { bg: "" };
+var settings = {
+  year: 2023,
+  goalPoundsPerWeek: 1.5,
+  debug: true,
+  calendarApp: "calshow",
+  backgroundImage: params.bg ? params.bg : "transparent.jpg",
+  calFilter: params.calFilter ? params.calFilter : [],
+  widgetBackgroundColor: "#000000",
+  todayTextColor: "#000000",
+  markToday: true,
+  todayCircleColor: "#FFB800",
+  showEventCircles: true,
+  discountAllDayEvents: false,
+  eventCircleColor: "#1E5C7B",
+  weekdayTextColor: "#ffffff",
+  weekendLetters: "#FFB800",
+  weekendLetterOpacity: 1,
+  weekendDates: "#FFB800",
+  locale: "en-US",
+  textColor: "#ffffff",
+  eventDateTimeOpacity: 0.7,
+  widgetType: params.view ? params.view : "cal",
+  showAllDayEvents: true,
+  showCalendarBullet: true,
+  startWeekOnSunday: false,
+  showEventsOnlyForToday: false,
+  nextNumOfDays: 7,
+  showCompleteTitle: false,
+  showPrevMonth: true,
+  showNextMonth: true,
+  individualDateTargets: false,
+  flipped: params.flipped ? params.flipped : false,
+};
 function getScriptableDate(getFilePath, monthAndDay) {
   const months = [
     "January",
@@ -27,22 +60,22 @@ function getScriptableDate(getFilePath, monthAndDay) {
       m = "0" + m;
     }
     let month = months[m - 1];
-    const formatDate = 2023 + "-" + m + "-" + day;
+    const formatDate = settings.year + "-" + m + "-" + day;
 
     if (getFilePath) {
-      return "/" + 2023 + "/" + month + "/" + formatDate;
+      return "/" + settings.year + "/" + month + "/" + formatDate;
     } else {
-      return 2023 + "-" + m + "-" + day;
+      return settings.year + "-" + m + "-" + day;
     }
   } else {
     date = new Date();
-    var y = String(date.getFullYear());
-    var m = date.getMonth() + 1;
+    let y = String(date.getFullYear());
+    let m = date.getMonth() + 1;
     if (m < 10) {
       m = "0" + m;
     }
-    var month = months[m - 1];
-    var day = date.getDate();
+    let month = months[m - 1];
+    let day = date.getDate();
     if (day < 10) {
       day = "0" + day;
     }
@@ -97,40 +130,69 @@ function scriptableGetFile(file, monthAndDate) {
   return returnValue;
 }
 
-// scriptableGetFile("Active Energy", "9/11");
-function calculateCaloricIntake(goalPoundsPerWeek, monthAndDay) {
+function calculateCaloricIntake(monthAndDay) {
   let activeEnergyCalories = scriptableGetFile("Active Energy", monthAndDay);
   let caloriesToday = scriptableGetFile("Dietary Energy", monthAndDay); // if more than 2500 then its kj
   let restingEnergyCalories = scriptableGetFile(
     "Basal Energy Burned",
     monthAndDay
   );
-  var totalCaloriesBurned = restingEnergyCalories + activeEnergyCalories;
-  var caloriesNeededForGoal = goalPoundsPerWeek * 3500;
-  var dailyCaloricDeficit = caloriesNeededForGoal / 7;
-  var dailyCaloricIntake = totalCaloriesBurned - dailyCaloricDeficit;
-  if (caloriesToday <= dailyCaloricIntake) {
-    return true;
+  let totalCaloriesBurned = restingEnergyCalories + activeEnergyCalories;
+  let caloriesNeededForGoal = settings.goalPoundsPerWeek * 3500;
+  let dailyCaloricDeficit = caloriesNeededForGoal / 7;
+  let allowedCalories = totalCaloriesBurned - dailyCaloricDeficit;
+  return calculatePercentage(caloriesToday, allowedCalories);
+}
+function calculatePercentage(caloriesConsumed, allowedCalories) {
+  let percentageConsumed = caloriesConsumed / allowedCalories;
+  if (percentageConsumed <= 1.0) {
+    return 100;
+  } else if (percentageConsumed <= 1.1) {
+    return 80;
+  } else if (percentageConsumed <= 1.2) {
+    return 70;
+  } else if (percentageConsumed <= 1.3) {
+    return 60;
   } else {
-    return false;
+    return 50;
   }
 }
 
 function proteinGoal(monthAndDay) {
   let proteinToday = scriptableGetFile("Protein", monthAndDay);
-  let weightInPounds = scriptableGetFile("Weight & Body Mass", monthAndDay); // if less than a hundred, then it's kg
+  let weightInPounds = scriptableGetFile("Weight & Body Mass", monthAndDay);
   let weightInKg = weightInPounds * 0.45359237;
   let idealProtein = weightInKg * 1.5;
-  console.log(proteinToday, "proteinToday");
-  console.log(idealProtein, "idealProten");
+  console.log(idealProtein, proteinToday, "what");
   if (proteinToday >= idealProtein) {
-    return true;
+    return 10;
   } else {
-    return false;
+    return 0;
   }
 }
 
-let daily = calculateCaloricIntake(1.5, "9/11");
-console.log(daily);
-let protein = proteinGoal("9/11");
-console.log(protein);
+function getDailyPercentage(monthAndDay) {
+  let daily = calculateCaloricIntake(monthAndDay);
+  let protein = proteinGoal(monthAndDay);
+  let sum = daily + protein;
+  if (typeof sum === "number") {
+    let colors = {
+      100: "#6CCF64",
+      90: "#52A34E",
+      80: "#2E6B38",
+      70: "#1F432B",
+      60: "#171B21",
+    };
+    return colors[sum];
+  } else {
+    console.log("Get Daily Percentage");
+    return "#171B21";
+  }
+}
+
+let daily = calculateCaloricIntake("9/12");
+console.log(daily, "daily goal");
+let protein = proteinGoal("9/12");
+console.log(protein, "protein goal");
+let percent = getDailyPercentage("9/12");
+console.log(percent);
