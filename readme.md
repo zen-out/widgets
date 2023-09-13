@@ -3,6 +3,7 @@
 ## Steps 
 1. Find out how to change the intensity first. 
 2. Get the UI down 
+3. Not sure if the data is correct. validate if first. 
 
 ## Purpose 
 I want to lose weight. Now, I saw the movie Cast Away with Tom Hanks, and there was one scene in which he drops 40 pounds (of course, this scene was supposedly over the course of '4 years', but in reality, was probably over the course of 4 months). 

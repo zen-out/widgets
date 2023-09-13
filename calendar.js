@@ -15,7 +15,7 @@ var settings = {
   calFilter: params.calFilter ? params.calFilter : [],
   intensityColor: "",
   widgetBackgroundColor: "#000000",
-  todayTextColor: "#D6BAEE",
+  todayTextColor: "#000000",
   markToday: true,
   todayCircleColor: "#FFB800",
   showEventCircles: true,
@@ -41,6 +41,7 @@ var settings = {
   flipped: params.flipped ? params.flipped : false,
 };
 var settings_default = settings;
+
 function getScriptableDate(getFilePath, monthAndDay) {
   const months = [
     "January",
@@ -119,14 +120,23 @@ function scriptableGetFile(file, monthAndDate) {
     String(`${file}-${getScriptableDatePath}.csv`)
   );
   if (files.fileExists(readFile)) {
-    var fileData = files.readString(readFile);
-    let lines = fileData.split("\n");
-    for (let i = 1; i < lines.length; i++) {
-      let columns = lines[i].split(",");
-      let eachNum = parseFloat(columns[1]);
-      if (!isNaN(eachNum)) {
-        returnValue += eachNum;
+    if (files.isFileDownloaded(readFile)) {
+      var fileData = files.readString(readFile);
+      let lines = fileData.split("\n");
+      for (let i = 1; i < lines.length; i++) {
+        let columns = lines[i].split(",");
+        let eachNum = parseFloat(columns[1]);
+        if (!isNaN(eachNum)) {
+          returnValue += eachNum;
+        }
       }
+      if (file.includes("Weight") && returnValue < 100) {
+        returnValue = returnValue * 2.20462;
+      } else if (file.includes("Dietary") && returnValue > 2500) {
+        returnValue = returnValue * 0.239006;
+      }
+    } else {
+      console.log(`file not downloaded: ${readFile}`);
     }
     if (file.includes("Weight") && returnValue < 100) {
       returnValue = returnValue * 2.20462;

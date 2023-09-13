@@ -101,18 +101,6 @@ function getScriptableDate(getFilePath, monthAndDay) {
     }
   }
 }
-// let getScriptableDatePath = getScriptableDate(false);
-
-// let getScriptableDatePath2 = getScriptableDate(true);
-// console.log(getScriptableDatePath, getScriptableDatePath2);
-
-// console.log("2023-09-13 /2023/September/2023-09-13");
-
-// let test = getScriptableDate(false, "9/11");
-
-// let test2 = getScriptableDate(true, "9/11");
-// console.log(test, test2);
-
 function scriptableGetFile(file, monthAndDate) {
   let returnValue = 0;
   // const BM = files.bookmarkedPath("Auto Export");
@@ -135,7 +123,7 @@ function scriptableGetFile(file, monthAndDate) {
   // kg
   if (file.includes("Weight") && returnValue < 100) {
     returnValue = returnValue * 2.20462;
-  } else if (file.includes("Dietary") && returnValue > 2500) {
+  } else if (file.includes("Dietary") && returnValue > 2100) {
     // kj
     returnValue = returnValue * 0.239006;
   }
@@ -206,9 +194,11 @@ function getDailyPercentage(monthAndDay) {
   }
 }
 
-let daily = calculateCaloricIntake("9/12");
+let daily = calculateCaloricIntake("9/6");
 console.log(daily, "daily goal");
-let protein = proteinGoal("9/12");
+let protein = proteinGoal("9/6");
 console.log(protein, "protein goal");
-let percent = getDailyPercentage("9/12");
+let percent = getDailyPercentage("9/6");
 console.log(percent);
+
+module.exports = { getDailyPercentage, scriptableGetFile };

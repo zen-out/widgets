@@ -117,16 +117,29 @@ function scriptableGetFile(file, monthAndDate) {
   let healthPath = files.joinPath(BM, datePath);
   let readFile = files.joinPath(
     healthPath,
-    String(`${file}-${getScriptableDatePath}.csv`)
+    String(`${file}-${getScriptableDatePath} 2.csv`)
   );
+  if (!files.fileExists(readFile)) {
+    readFile = files.joinPath(
+      healthPath,
+      String(`${file}-${getScriptableDatePath}.csv`)
+    );
+  }
   if (files.fileExists(readFile)) {
-    var fileData = files.readString(readFile);
-    let lines = fileData.split("\n");
-    for (let i = 1; i < lines.length; i++) {
-      let columns = lines[i].split(",");
-      let eachNum = parseFloat(columns[1]);
-      if (!isNaN(eachNum)) {
-        returnValue += eachNum;
+    if (files.isFileDownloaded(readFile)) {
+      var fileData = files.readString(readFile);
+      let lines = fileData.split("\n");
+      for (let i = 1; i < lines.length; i++) {
+        let columns = lines[i].split(",");
+        let eachNum = parseFloat(columns[1]);
+        if (!isNaN(eachNum)) {
+          returnValue += eachNum;
+        }
+      }
+      if (file.includes("Weight") && returnValue < 100) {
+        returnValue = returnValue * 2.20462;
+      } else if (file.includes("Dietary") && returnValue > 2500) {
+        returnValue = returnValue * 0.239006;
       }
     }
     if (file.includes("Weight") && returnValue < 100) {
@@ -202,11 +215,3 @@ function getDailyPercentage(monthAndDay) {
     return settings.F;
   }
 }
-
-//
-let daily = calculateCaloricIntake("9/12");
-console.log(daily, "daily goal");
-let protein = proteinGoal("9/12");
-console.log(protein, "protein goal");
-let percent = getDailyPercentage("9/12");
-console.log(percent);
