@@ -41,7 +41,6 @@ var settings = {
   flipped: params.flipped ? params.flipped : false,
 };
 var settings_default = settings;
-
 function getScriptableDate(getFilePath, monthAndDay) {
   const months = [
     "January",
@@ -863,7 +862,7 @@ async function main() {
   } else if (settings_default.debug) {
     Script.complete();
     const widget = await buildWidget_default(settings_default);
-    await widget.presentSmall();
+    await widget.presentMedium();
   } else {
     const appleDate = new Date("2001/01/01");
     const timestamp = (new Date().getTime() - appleDate.getTime()) / 1e3;
