@@ -1,11 +1,13 @@
-const params = { bg: "" };
+var params = JSON.parse(args.widgetParameter) || {};
+
 var settings = {
-  100: "#6CCF64",
-  90: "#52A34E",
-  80: "#2E6B38",
-  70: "#1F432B",
-  60: "#171B21",
+  A: "#6CCF64",
+  B: "#52A34E",
+  C: "#2E6B38",
+  D: "#1F432B",
+  F: "#171B21",
   year: 2023,
+  month: 9,
   goalPoundsPerWeek: 1.5,
   debug: true,
   calendarApp: "calshow",
@@ -40,12 +42,6 @@ var settings = {
 };
 var settings_default = settings;
 
-let files = FileManager.local();
-const iCloudInUse = files.isFileStoredIniCloud(module.filename);
-
-// If so, use an iCloud file manager.
-files = iCloudInUse ? FileManager.iCloud() : files;
-
 function getScriptableDate(getFilePath, monthAndDay) {
   const months = [
     "January",
@@ -63,9 +59,17 @@ function getScriptableDate(getFilePath, monthAndDay) {
   ];
   let date;
   if (monthAndDay) {
-    let splitted = monthAndDay.split("/");
-    let day = parseInt(splitted[1]);
-    let m = parseInt(splitted[0]);
+    let day;
+    let m;
+    if (!monthAndDay.includes("/") || typeof monthAndDay === "number") {
+      day = parseInt(monthAndDay);
+      m = settings.month;
+    } else {
+      splitted = monthAndDay.split("/");
+      day = parseInt(splitted[1]);
+      m = parseInt(splitted[0]);
+    }
+
     if (day < 10) {
       day = "0" + day;
     }
@@ -73,12 +77,12 @@ function getScriptableDate(getFilePath, monthAndDay) {
       m = "0" + m;
     }
     let month = months[m - 1];
-    const formatDate = 2023 + "-" + m + "-" + day;
+    const formatDate = settings.year + "-" + m + "-" + day;
 
     if (getFilePath) {
-      return "/" + 2023 + "/" + month + "/" + formatDate;
+      return "/" + settings.year + "/" + month + "/" + formatDate;
     } else {
-      return 2023 + "-" + m + "-" + day;
+      return settings.year + "-" + m + "-" + day;
     }
   } else {
     date = new Date();
@@ -103,6 +107,9 @@ function getScriptableDate(getFilePath, monthAndDay) {
 }
 
 function scriptableGetFile(file, monthAndDate) {
+  let files = FileManager.local();
+  const iCloudInUse = files.isFileStoredIniCloud(module.filename);
+  files = iCloudInUse ? FileManager.iCloud() : files;
   let returnValue = 0;
   const BM = files.bookmarkedPath("Auto Export");
   let datePath = getScriptableDate(true, monthAndDate);
@@ -177,13 +184,26 @@ function getDailyPercentage(monthAndDay) {
   let protein = proteinGoal(monthAndDay);
   let sum = daily + protein;
   if (typeof sum === "number") {
-    return settings[sum];
+    if (sum > 91) {
+      return settings.A;
+    } else if (sum >= 90) {
+      return settings.B;
+    } else if (sum >= 80) {
+      return settings.C;
+    } else if (sum >= 70) {
+      return settings.D;
+    } else if (sum >= 60) {
+      return settings.F;
+    } else {
+      return settings.F;
+    }
   } else {
     console.log("Get Daily Percentage");
-    return "#171B21";
+    return settings.F;
   }
 }
 
+//
 let daily = calculateCaloricIntake("9/12");
 console.log(daily, "daily goal");
 let protein = proteinGoal("9/12");

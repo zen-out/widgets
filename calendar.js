@@ -1,14 +1,21 @@
-// src/settings.ts
-// var params = JSON.parse(args.widgetParameter) || {};
-var params = { bg: "top-right.jpg", view: "cal" };
+var params = JSON.parse(args.widgetParameter) || {};
+
 var settings = {
+  A: "#6CCF64",
+  B: "#52A34E",
+  C: "#2E6B38",
+  D: "#1F432B",
+  F: "#171B21",
+  year: 2023,
+  month: 9,
+  goalPoundsPerWeek: 1.5,
   debug: true,
   calendarApp: "calshow",
   backgroundImage: params.bg ? params.bg : "transparent.jpg",
   calFilter: params.calFilter ? params.calFilter : [],
   intensityColor: "",
   widgetBackgroundColor: "#000000",
-  todayTextColor: "#000000",
+  todayTextColor: "#D6BAEE",
   markToday: true,
   todayCircleColor: "#FFB800",
   showEventCircles: true,
@@ -34,6 +41,167 @@ var settings = {
   flipped: params.flipped ? params.flipped : false,
 };
 var settings_default = settings;
+
+function getScriptableDate(getFilePath, monthAndDay) {
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  let date;
+  if (monthAndDay) {
+    let day;
+    let m;
+    if (!monthAndDay.includes("/") || typeof monthAndDay === "number") {
+      day = parseInt(monthAndDay);
+      m = settings.month;
+    } else {
+      splitted = monthAndDay.split("/");
+      day = parseInt(splitted[1]);
+      m = parseInt(splitted[0]);
+    }
+
+    if (day < 10) {
+      day = "0" + day;
+    }
+    if (m < 10) {
+      m = "0" + m;
+    }
+    let month = months[m - 1];
+    const formatDate = settings.year + "-" + m + "-" + day;
+
+    if (getFilePath) {
+      return "/" + settings.year + "/" + month + "/" + formatDate;
+    } else {
+      return settings.year + "-" + m + "-" + day;
+    }
+  } else {
+    date = new Date();
+    var y = String(date.getFullYear());
+    var m = date.getMonth() + 1;
+    if (m < 10) {
+      m = "0" + m;
+    }
+    var month = months[m - 1];
+    var day = date.getDate();
+    if (day < 10) {
+      day = "0" + day;
+    }
+
+    const formatDate = y + "-" + m + "-" + day;
+    if (getFilePath) {
+      return "/" + y + "/" + month + "/" + formatDate;
+    } else {
+      return y + "-" + m + "-" + day;
+    }
+  }
+}
+
+function scriptableGetFile(file, monthAndDate) {
+  let files = FileManager.local();
+  const iCloudInUse = files.isFileStoredIniCloud(module.filename);
+  files = iCloudInUse ? FileManager.iCloud() : files;
+  let returnValue = 0;
+  const BM = files.bookmarkedPath("Auto Export");
+  let datePath = getScriptableDate(true, monthAndDate);
+  let getScriptableDatePath = getScriptableDate(false, monthAndDate);
+  let healthPath = files.joinPath(BM, datePath);
+  let readFile = files.joinPath(
+    healthPath,
+    String(`${file}-${getScriptableDatePath}.csv`)
+  );
+  if (files.fileExists(readFile)) {
+    var fileData = files.readString(readFile);
+    let lines = fileData.split("\n");
+    for (let i = 1; i < lines.length; i++) {
+      let columns = lines[i].split(",");
+      let eachNum = parseFloat(columns[1]);
+      if (!isNaN(eachNum)) {
+        returnValue += eachNum;
+      }
+    }
+    if (file.includes("Weight") && returnValue < 100) {
+      returnValue = returnValue * 2.20462;
+    } else if (file.includes("Dietary") && returnValue > 2500) {
+      returnValue = returnValue * 0.239006;
+    }
+  } else {
+    returnValue = "--";
+  }
+  return returnValue;
+}
+
+function calculateCaloricIntake(monthAndDay) {
+  let activeEnergyCalories = scriptableGetFile("Active Energy", monthAndDay);
+  let caloriesToday = scriptableGetFile("Dietary Energy", monthAndDay); // if more than 2500 then its kj
+  let restingEnergyCalories = scriptableGetFile(
+    "Basal Energy Burned",
+    monthAndDay
+  );
+  let totalCaloriesBurned = restingEnergyCalories + activeEnergyCalories;
+  let caloriesNeededForGoal = settings.goalPoundsPerWeek * 3500;
+  let dailyCaloricDeficit = caloriesNeededForGoal / 7;
+  let allowedCalories = totalCaloriesBurned - dailyCaloricDeficit;
+  return calculatePercentage(caloriesToday, allowedCalories);
+}
+function calculatePercentage(caloriesConsumed, allowedCalories) {
+  let percentageConsumed = caloriesConsumed / allowedCalories;
+  if (percentageConsumed <= 1.0) {
+    return 100;
+  } else if (percentageConsumed <= 1.1) {
+    return 80;
+  } else if (percentageConsumed <= 1.2) {
+    return 70;
+  } else if (percentageConsumed <= 1.3) {
+    return 60;
+  } else {
+    return 50;
+  }
+}
+
+function proteinGoal(monthAndDay) {
+  let proteinToday = scriptableGetFile("Protein", monthAndDay);
+  let weightInPounds = scriptableGetFile("Weight & Body Mass", monthAndDay);
+  let weightInKg = weightInPounds * 0.45359237;
+  let idealProtein = weightInKg * 1.5;
+  if (proteinToday >= idealProtein) {
+    return 10;
+  } else {
+    return 0;
+  }
+}
+function getDailyPercentage(monthAndDay) {
+  let daily = calculateCaloricIntake(monthAndDay);
+  let protein = proteinGoal(monthAndDay);
+  let sum = daily + protein;
+  if (typeof sum === "number") {
+    if (sum > 91) {
+      return settings.A;
+    } else if (sum >= 90) {
+      return settings.B;
+    } else if (sum >= 80) {
+      return settings.C;
+    } else if (sum >= 70) {
+      return settings.D;
+    } else if (sum >= 60) {
+      return settings.F;
+    } else {
+      return settings.F;
+    }
+  } else {
+    console.log("Get Daily Percentage");
+    return settings.F;
+  }
+}
 
 // src/setWidgetBackground.ts
 function setWidgetBackground(widget, imageName) {
@@ -265,7 +433,6 @@ function updateEventCounts(date, eventCounts) {
   }
 }
 function calculateIntensity(eventCounts) {
-  console.log(eventCounts, "eventCounts");
   const counter = eventCounts.values();
   const counts = [];
   for (const count of counter) {
@@ -284,13 +451,14 @@ function createDateImage(
   text,
   { backgroundColor, textColor, intensity, toFullSize }
 ) {
+  let percent = getDailyPercentage(text);
   const size = toFullSize ? 50 : 35;
   const drawing = new DrawContext();
   drawing.respectScreenScale = true;
   const contextSize = 50;
   drawing.size = new Size(contextSize, contextSize);
   drawing.opaque = false;
-  drawing.setFillColor(new Color(backgroundColor, intensity));
+  drawing.setFillColor(new Color(percent));
   drawing.fillEllipse(
     new Rect(
       (contextSize - (size - 2)) / 2,
@@ -408,10 +576,9 @@ async function buildCalendarView(date, stack, settings2) {
         if (j > 0) dayStack.url = callbackUrl;
       }
       // here
-      console.log(`calendar[i][j], ${day}, ${month}`);
-      console.log(`calendar[i][j], ${calendar[i][j]}`);
       if (calendar[i][j] === `${date.getMonth()}/${date.getDate()}`) {
         if (settings2.markToday) {
+          console.log(`what's the day?${day}${typeof day === "number"}`);
           const highlightedDate = createDateImage_default(day, {
             backgroundColor: settings2.todayCircleColor,
             textColor: settings2.todayTextColor,

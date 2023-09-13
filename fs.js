@@ -1,11 +1,11 @@
 const fs = require("fs");
 const params = { bg: "" };
 var settings = {
-  100: "#6CCF64",
-  90: "#52A34E",
-  80: "#2E6B38",
-  70: "#1F432B",
-  60: "#171B21",
+  A: "#6CCF64",
+  B: "#52A34E",
+  C: "#2E6B38",
+  D: "#1F432B",
+  F: "#171B21",
   year: 2023,
   goalPoundsPerWeek: 1.5,
   debug: true,
@@ -56,8 +56,16 @@ function getScriptableDate(getFilePath, monthAndDay) {
   let date;
   if (monthAndDay) {
     let splitted = monthAndDay.split("/");
-    let day = parseInt(splitted[1]);
-    let m = parseInt(splitted[0]);
+    let day;
+    let m;
+    if (!monthAndDay.includes("/")) {
+      day = parseInt(monthAndDay);
+      m = 9;
+    } else {
+      splitted = monthAndDay.split("/");
+      day = parseInt(splitted[1]);
+      m = parseInt(splitted[0]);
+    }
     if (day < 10) {
       day = "0" + day;
     }
@@ -179,10 +187,22 @@ function getDailyPercentage(monthAndDay) {
   let protein = proteinGoal(monthAndDay);
   let sum = daily + protein;
   if (typeof sum === "number") {
-    return settings[sum];
+    if (sum > 91) {
+      return settings.A;
+    } else if (sum >= 90) {
+      return settings.B;
+    } else if (sum >= 80) {
+      return settings.C;
+    } else if (sum >= 70) {
+      return settings.D;
+    } else if (sum >= 60) {
+      return settings.F;
+    } else {
+      return settings.F;
+    }
   } else {
     console.log("Get Daily Percentage");
-    return "#171B21";
+    return settings.F;
   }
 }
 
