@@ -1,8 +1,4 @@
-let files = FileManager.local();
-const iCloudInUse = files.isFileStoredIniCloud(module.filename);
-
-// If so, use an iCloud file manager.
-files = iCloudInUse ? FileManager.iCloud() : files;
+const fs = require("fs");
 
 function getScriptableDate(getFilePath, monthAndDay) {
   const months = [
@@ -73,37 +69,35 @@ console.log(test, test2);
 
 function scriptableGetFile(file, monthAndDate) {
   let returnValue = 0;
-  const BM = files.bookmarkedPath("Auto Export");
-  let datePath = getScriptableDate(true, monthAndDate);
-  let getScriptableDatePath = getScriptableDate(false, monthAndDate);
-  let healthPath = files.joinPath(BM, datePath);
-  let readFile = files.joinPath(
-    healthPath,
-    String(`${file}-${getScriptableDatePath}.csv`)
-  );
-  if (files.fileExists(readFile)) {
-    var fileData = files.readString(readFile);
-    let lines = fileData.split("\n");
-    for (let i = 1; i < lines.length; i++) {
-      let columns = lines[i].split(",");
-      let eachNum = parseFloat(columns[1]);
-      if (!isNaN(eachNum)) {
-        returnValue += eachNum;
-      }
-    }
-    // kg
-    if (file.includes("Weight") && returnValue < 100) {
-      returnValue = returnValue * 2.20462;
-    } else if (file.includes("Dietary") && returnValue > 2500) {
-      // kj
-      returnValue = returnValue * 0.239006;
-    }
+  // const BM = files.bookmarkedPath("Auto Export");
+  let getScriptableDatePath;
+  if (monthAndDate) {
+    getScriptableDatePath = getScriptableDate(false, monthAndDate);
   } else {
-    returnValue = "--";
+    getScriptableDatePath = getScriptableDate(false);
   }
+  let filePath = `./data/${file}-${getScriptableDatePath}.csv`;
+  let fileData = fs.readFileSync(filePath, "utf8");
+  let lines = fileData.split("\n");
+  for (let i = 1; i < lines.length; i++) {
+    let columns = lines[i].split(",");
+    let eachNum = parseFloat(columns[1]);
+    if (!isNaN(eachNum)) {
+      returnValue += eachNum;
+    }
+  }
+  // kg
+  if (file.includes("Weight") && returnValue < 100) {
+    returnValue = returnValue * 2.20462;
+  } else if (file.includes("Dietary") && returnValue > 2500) {
+    // kj
+    returnValue = returnValue * 0.239006;
+  }
+  console.log(returnValue);
   return returnValue;
 }
 
+// scriptableGetFile("Active Energy", "9/11");
 function calculateCaloricIntake(goalPoundsPerWeek, monthAndDay) {
   let activeEnergyCalories = scriptableGetFile("Active Energy", monthAndDay);
   let caloriesToday = scriptableGetFile("Dietary Energy", monthAndDay); // if more than 2500 then its kj
@@ -125,9 +119,10 @@ function calculateCaloricIntake(goalPoundsPerWeek, monthAndDay) {
 function proteinGoal(monthAndDay) {
   let proteinToday = scriptableGetFile("Protein", monthAndDay);
   let weightInPounds = scriptableGetFile("Weight & Body Mass", monthAndDay); // if less than a hundred, then it's kg
-  console.log(weightInPounds, "here");
   let weightInKg = weightInPounds * 0.45359237;
   let idealProtein = weightInKg * 1.5;
+  console.log(proteinToday, "proteinToday");
+  console.log(idealProtein, "idealProten");
   if (proteinToday >= idealProtein) {
     return true;
   } else {

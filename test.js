@@ -180,8 +180,6 @@ const custom = {
     const formatDate = y + "-" + m + "-" + day;
     const BM = files.bookmarkedPath("Auto Export");
     const filePath = "/" + y + "/" + month + "/" + formatDate;
-
-    console.log(filePath);
     var healthPath = files.joinPath(BM, filePath);
     //     QuickLook.present(healthPath)
 
