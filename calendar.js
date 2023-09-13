@@ -6,6 +6,7 @@ var settings = {
   calendarApp: "calshow",
   backgroundImage: params.bg ? params.bg : "transparent.jpg",
   calFilter: params.calFilter ? params.calFilter : [],
+  intensityColor: "",
   widgetBackgroundColor: "#000000",
   todayTextColor: "#000000",
   markToday: true,
@@ -264,6 +265,7 @@ function updateEventCounts(date, eventCounts) {
   }
 }
 function calculateIntensity(eventCounts) {
+  console.log(eventCounts, "eventCounts");
   const counter = eventCounts.values();
   const counts = [];
   for (const count of counter) {
@@ -407,7 +409,6 @@ async function buildCalendarView(date, stack, settings2) {
       }
       // here
       console.log(`calendar[i][j], ${day}, ${month}`);
-
       console.log(`calendar[i][j], ${calendar[i][j]}`);
       if (calendar[i][j] === `${date.getMonth()}/${date.getDate()}`) {
         if (settings2.markToday) {

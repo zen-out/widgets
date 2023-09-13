@@ -1,394 +1,192 @@
-// Variables used by Scriptable.
-// These must be at the very top of the file. Do not edit.
-// icon-color: purple; icon-glyph: magic;
-// Variables used by Scriptable.
-// These must be at the very top of the file. Do not edit.
-// icon-color: deep-purple; icon-glyph: calendar;
-/*
-~
-Welcome to Weather Cal. Run this script to set up your widget.
-Add or remove items from the widget in the layout section below.
-You can duplicate this script to create multiple widgets. Make sure to change the name of the script each time.
-Happy scripting!
-~
-*/
+const params = { bg: "" };
+var settings = {
+  100: "#6CCF64",
+  90: "#52A34E",
+  80: "#2E6B38",
+  70: "#1F432B",
+  60: "#171B21",
+  year: 2023,
+  goalPoundsPerWeek: 1.5,
+  debug: true,
+  calendarApp: "calshow",
+  backgroundImage: params.bg ? params.bg : "transparent.jpg",
+  calFilter: params.calFilter ? params.calFilter : [],
+  intensityColor: "",
+  widgetBackgroundColor: "#000000",
+  todayTextColor: "#000000",
+  markToday: true,
+  todayCircleColor: "#FFB800",
+  showEventCircles: true,
+  discountAllDayEvents: false,
+  eventCircleColor: "#1E5C7B",
+  weekdayTextColor: "#ffffff",
+  weekendLetters: "#FFB800",
+  weekendLetterOpacity: 1,
+  weekendDates: "#FFB800",
+  locale: "en-US",
+  textColor: "#ffffff",
+  eventDateTimeOpacity: 0.7,
+  widgetType: params.view ? params.view : "cal",
+  showAllDayEvents: true,
+  showCalendarBullet: true,
+  startWeekOnSunday: false,
+  showEventsOnlyForToday: false,
+  nextNumOfDays: 7,
+  showCompleteTitle: false,
+  showPrevMonth: true,
+  showNextMonth: true,
+  individualDateTargets: false,
+  flipped: params.flipped ? params.flipped : false,
+};
+var settings_default = settings;
 
-// Specify the layout of the widget items.
-const layout = `
-  
-  row 
-    column
-      date
-    column(175)
-      right
-      batterybright
-      health
-      heart
-  row
-    column
-      left
-      events
-      right
-      greeting
-      
-`;
-
-/*
- * CODE
- * Be more careful editing this section.
- * =====================================
- */
-
-// Names of Weather Cal elements.
-const codeFilename = "Weather Cal code";
-const gitHubUrl =
-  "https://raw.githubusercontent.com/mzeryck/Weather-Cal/main/weather-cal-code.js";
-
-// Determine if the user is using iCloud.
 let files = FileManager.local();
 const iCloudInUse = files.isFileStoredIniCloud(module.filename);
 
 // If so, use an iCloud file manager.
 files = iCloudInUse ? FileManager.iCloud() : files;
 
-// Determine if the Weather Cal code exists and download if needed.
-const pathToCode = files.joinPath(
-  files.documentsDirectory(),
-  codeFilename + ".js"
-);
-if (!files.fileExists(pathToCode)) {
-  const req = new Request(gitHubUrl);
-  const codeString = await req.loadString();
-  files.writeString(pathToCode, codeString);
-}
-
-// Import the code.
-if (iCloudInUse) {
-  await files.downloadFileFromiCloud(pathToCode);
-}
-const code = importModule(codeFilename);
-const custom = {
-  // Custom items and backgrounds can be added here.
-
-  /*bright(column){
-    
-    const brightStack = code.align(column)
-    brightStack.layoutHorizontally()
-    brightStack.centerAlignContent()
-    //brightStack.setPadding(code.padding/2, code.padding, code.padding/2, code.padding)
-
-    const brightIcon = brightStack.addImage(SFSymbol.named("sun.max").image)
-    brightIcon.imageSize = new Size(15,15)
-
-    const brightLevel = Math.round(Device.screenBrightness() * 100)
-    code.tintIcon(brightIcon,code.format.battery,true)
-
-    brightStack.addSpacer(code.padding * 0.6)
-    code.provideText(brightLevel + "%", brightStack, code.format.battery)
-
-  },*/
-
-  batterybright(column) {
-    const batterybrightStack = code.align(column);
-    batterybrightStack.layoutHorizontally();
-    batterybrightStack.centerAlignContent();
-    batterybrightStack.setPadding(
-      code.padding / 2,
-      code.padding,
-      code.padding / 2,
-      code.padding
-    );
-    //     batterybrightStack.addSpacer()
-
-    //Battery Icon
-    const batteryIcon = batterybrightStack.addImage(
-      code.provideBatteryIcon(Device.batteryLevel(), Device.isCharging())
-    );
-    batteryIcon.imageSize = new Size(20, 20);
-    batterybrightStack.addSpacer(code.padding * 0.6);
-    //Battery Level
-    const batteryLevel = Math.round(Device.batteryLevel() * 100);
-    if (batteryLevel > 20 || Device.isCharging()) {
-      code.tintIcon(batteryIcon, code.format.battery, true);
-    } else {
-      batteryIcon.tintColor = Color.red();
-    }
-    code.provideText(
-      batteryLevel + "%",
-      batterybrightStack,
-      code.format.battery
-    );
-
-    batterybrightStack.addSpacer(code.padding);
-
-    //Bright Icon
-    const brightIcon = batterybrightStack.addImage(
-      SFSymbol.named("sun.max").image
-    );
-    brightIcon.imageSize = new Size(15, 15);
-    code.tintIcon(brightIcon, code.format.battery, true);
-    batterybrightStack.addSpacer(code.padding * 0.6);
-
-    //Bright Level
-    const brightLevel = Math.round(Device.screenBrightness() * 100);
-    code.provideText(
-      brightLevel + "%",
-      batterybrightStack,
-      code.format.battery
-    );
-
-    //     batterybrightStack.addSpacer()
-  },
-
-  health(column) {
-    const healthStack = code.align(column);
-    healthStack.layoutHorizontally();
-    healthStack.centerAlignContent();
-    healthStack.setPadding(
-      code.padding / 2,
-      code.padding,
-      code.padding / 2,
-      code.padding
-    );
-
-    //Get date and file path information
-    date = new Date();
-    var y = String(date.getFullYear());
-    var m = date.getMonth() + 1;
-    if (m < 10) {
-      m = "0" + m;
-    }
-    const months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    var month = months[m - 1];
-    var day = date.getDate();
+function getScriptableDate(getFilePath, monthAndDay) {
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  let date;
+  if (monthAndDay) {
+    let splitted = monthAndDay.split("/");
+    let day = parseInt(splitted[1]);
+    let m = parseInt(splitted[0]);
     if (day < 10) {
       day = "0" + day;
     }
-    const formatDate = y + "-" + m + "-" + day;
-    const BM = files.bookmarkedPath("Auto Export");
-    const filePath = "/" + y + "/" + month + "/" + formatDate;
-
-    console.log(filePath);
-    var healthPath = files.joinPath(BM, filePath);
-    //     QuickLook.present(healthPath)
-
-    //Get activity data
-    const activityPath = files.joinPath(
-      healthPath,
-      String("Active Energy-" + formatDate + ".csv")
-    );
-    console.log(activityPath);
-    if (files.fileExists(activityPath)) {
-      var activityData = files.readString(activityPath);
-      console.log(activityData);
-      var activity = activityData.split(/[\n,]/);
-      //Process CSV
-      var activityValues = [];
-      for (i = 3; i < activity.length; ) {
-        activityValues.push(parseFloat(activity[i]));
-        i = i + 2;
-      }
-      var activitySum = Math.round(
-        activityValues.reduce((a, b) => {
-          return a + b;
-        })
-      );
-    } else {
-      var activitySum = "--";
-    }
-
-    //Get exercise data
-    const exercisePath = files.joinPath(
-      healthPath,
-      String("Apple Exercise Time-" + formatDate + ".csv")
-    );
-    if (files.fileExists(exercisePath)) {
-      var exerciseData = files.readString(exercisePath);
-      var exercise = exerciseData.split(/[\n,]/);
-      //Process CSV
-      var exerciseValues = [];
-      for (i = 3; i < exercise.length; ) {
-        exerciseValues.push(parseFloat(exercise[i]));
-        i = i + 2;
-      }
-      var exerciseSum = Math.round(
-        exerciseValues.reduce((a, b) => {
-          return a + b;
-        })
-      );
-    } else {
-      var exerciseSum = "--";
-    }
-
-    //Get stand data
-    const standPath = files.joinPath(
-      healthPath,
-      String("Apple Stand Hour-" + formatDate + ".csv")
-    );
-    if (files.fileExists(standPath)) {
-      var standData = files.readString(standPath);
-      var stand = standData.split(/[\n,]/);
-      //Process CSV
-      var standSum = stand[3];
-    } else {
-      var standSum = "--";
-    }
-
-    /*//Get step count
-    const stepPath = files.joinPath(healthPath, String("Step Count-" + formatDate + ".csv"))
-    var stepData = files.readString(stepPath)
-    var step = stepData.split(/[\n,]/)
-    //Process CSV
-    var stepValues = []
-    for (i = 3; i < step.length;) {
-      stepValues.push(parseFloat(step[i]));
-      i=i+2
-    }
-    var stepSum = Math.round(stepValues.reduce((a,b)=>{return a+b;}));*/
-
-    const healthIcon = healthStack.addImage(
-      SFSymbol.named("figure.walk").image
-    );
-    healthIcon.imageSize = new Size(10, 10);
-    code.tintIcon(healthIcon, code.format.battery, true);
-
-    healthStack.addSpacer(code.padding * 0.6);
-
-    code.provideText(
-      activitySum + " cal | " + exerciseSum + " min | " + standSum + " hrs",
-      healthStack,
-      code.format.customText
-    );
-    //code.provideText(activitySum + "cal | " + exerciseSum + "min | " + standSum + "hrs | " + stepSum + "steps", healthStack, code.format.customText)
-  },
-
-  heart(column) {
-    const heartStack = code.align(column);
-    heartStack.layoutHorizontally();
-    heartStack.centerAlignContent();
-    heartStack.setPadding(
-      code.padding / 2,
-      code.padding,
-      code.padding / 2,
-      code.padding
-    );
-
-    const heartIcon = heartStack.addImage(SFSymbol.named("heart.fill").image);
-    heartIcon.imageSize = new Size(10, 10);
-    code.tintIcon(heartIcon, code.format.battery, true);
-    heartStack.addSpacer(code.padding * 0.6);
-
-    date = new Date();
-    var y = String(date.getFullYear());
-    var m = date.getMonth() + 1;
     if (m < 10) {
       m = "0" + m;
     }
-    const months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    var month = months[m - 1];
-    var day = date.getDate();
-    if (day < 10) {
-      day = "0" + day;
-    }
-    const formatDate = y + "-" + m + "-" + day;
-    const BM = files.bookmarkedPath("Auto Export");
-    const filePath = "/" + y + "/" + month + "/" + formatDate;
-    var healthPath = files.joinPath(BM, filePath);
+    let month = months[m - 1];
+    const formatDate = 2023 + "-" + m + "-" + day;
 
-    //Get heart data
-    const heartPath = files.joinPath(
-      healthPath,
-      String("Heart Rate-" + formatDate + ".csv")
-    );
-    if (files.fileExists(heartPath)) {
-      var heartData = files.readString(heartPath);
-      var heart = heartData.split(/[\n,]/);
-      var last = heart.length - 2;
-      var heartAvg = Math.round(heart[last]);
+    if (getFilePath) {
+      return "/" + 2023 + "/" + month + "/" + formatDate;
     } else {
-      var heartAvg = "--";
+      return 2023 + "-" + m + "-" + day;
     }
-    //Process CSV
-    code.provideText(heartAvg + " bpm", heartStack, code.format.customText);
-  },
-
-  /*async background(widget) {
-  
-  //if (!code.data.sun) { await code.setupSunrise() }
-  ///const current = code.now.getTime()
-  
-  //Define file path
-  const dirPath = files.joinPath(files.documentsDirectory(), "Weather Cal")
-
-  //Set defualt, 'light' background 
-  var path = files.joinPath(dirPath, "Weather Cal-light.jpg")
-  //Check if device is using dark mode, use dark image if true
-  if (Device.isUsingDarkAppearance()){
-    var path = files.joinPath(dirPath, "Weather Cal-dark.jpg")
-    return widget.backgroundImage = files.readImage(path)
-  }
-
-  return widget.backgroundImage = files.readImage(path)
-  
-  },*/
-};
-
-// Run the initial setup or settings menu.
-let preview;
-if (config.runsInApp) {
-  preview = await code.runSetup(
-    Script.name(),
-    iCloudInUse,
-    codeFilename,
-    gitHubUrl
-  );
-  if (!preview) return;
-}
-
-// Set up the widget.
-const widget = await code.createWidget(
-  layout,
-  Script.name(),
-  iCloudInUse,
-  custom
-);
-Script.setWidget(widget);
-
-// If we're in app, display the preview.
-if (config.runsInApp) {
-  if (preview == "small") {
-    widget.presentSmall();
-  } else if (preview == "medium") {
-    widget.presentMedium();
   } else {
-    widget.presentLarge();
+    date = new Date();
+    var y = String(date.getFullYear());
+    var m = date.getMonth() + 1;
+    if (m < 10) {
+      m = "0" + m;
+    }
+    var month = months[m - 1];
+    var day = date.getDate();
+    if (day < 10) {
+      day = "0" + day;
+    }
+
+    const formatDate = y + "-" + m + "-" + day;
+    if (getFilePath) {
+      return "/" + y + "/" + month + "/" + formatDate;
+    } else {
+      return y + "-" + m + "-" + day;
+    }
   }
 }
 
-Script.complete();
+function scriptableGetFile(file, monthAndDate) {
+  let returnValue = 0;
+  const BM = files.bookmarkedPath("Auto Export");
+  let datePath = getScriptableDate(true, monthAndDate);
+  let getScriptableDatePath = getScriptableDate(false, monthAndDate);
+  let healthPath = files.joinPath(BM, datePath);
+  let readFile = files.joinPath(
+    healthPath,
+    String(`${file}-${getScriptableDatePath}.csv`)
+  );
+  if (files.fileExists(readFile)) {
+    var fileData = files.readString(readFile);
+    let lines = fileData.split("\n");
+    for (let i = 1; i < lines.length; i++) {
+      let columns = lines[i].split(",");
+      let eachNum = parseFloat(columns[1]);
+      if (!isNaN(eachNum)) {
+        returnValue += eachNum;
+      }
+    }
+    if (file.includes("Weight") && returnValue < 100) {
+      returnValue = returnValue * 2.20462;
+    } else if (file.includes("Dietary") && returnValue > 2500) {
+      returnValue = returnValue * 0.239006;
+    }
+  } else {
+    returnValue = "--";
+  }
+  return returnValue;
+}
+
+function calculateCaloricIntake(monthAndDay) {
+  let activeEnergyCalories = scriptableGetFile("Active Energy", monthAndDay);
+  let caloriesToday = scriptableGetFile("Dietary Energy", monthAndDay); // if more than 2500 then its kj
+  let restingEnergyCalories = scriptableGetFile(
+    "Basal Energy Burned",
+    monthAndDay
+  );
+  let totalCaloriesBurned = restingEnergyCalories + activeEnergyCalories;
+  let caloriesNeededForGoal = settings.goalPoundsPerWeek * 3500;
+  let dailyCaloricDeficit = caloriesNeededForGoal / 7;
+  let allowedCalories = totalCaloriesBurned - dailyCaloricDeficit;
+  return calculatePercentage(caloriesToday, allowedCalories);
+}
+function calculatePercentage(caloriesConsumed, allowedCalories) {
+  let percentageConsumed = caloriesConsumed / allowedCalories;
+  if (percentageConsumed <= 1.0) {
+    return 100;
+  } else if (percentageConsumed <= 1.1) {
+    return 80;
+  } else if (percentageConsumed <= 1.2) {
+    return 70;
+  } else if (percentageConsumed <= 1.3) {
+    return 60;
+  } else {
+    return 50;
+  }
+}
+
+function proteinGoal(monthAndDay) {
+  let proteinToday = scriptableGetFile("Protein", monthAndDay);
+  let weightInPounds = scriptableGetFile("Weight & Body Mass", monthAndDay);
+  let weightInKg = weightInPounds * 0.45359237;
+  let idealProtein = weightInKg * 1.5;
+  if (proteinToday >= idealProtein) {
+    return 10;
+  } else {
+    return 0;
+  }
+}
+function getDailyPercentage(monthAndDay) {
+  let daily = calculateCaloricIntake(monthAndDay);
+  let protein = proteinGoal(monthAndDay);
+  let sum = daily + protein;
+  if (typeof sum === "number") {
+    return settings[sum];
+  } else {
+    console.log("Get Daily Percentage");
+    return "#171B21";
+  }
+}
+
+let daily = calculateCaloricIntake("9/12");
+console.log(daily, "daily goal");
+let protein = proteinGoal("9/12");
+console.log(protein, "protein goal");
+let percent = getDailyPercentage("9/12");
+console.log(percent);

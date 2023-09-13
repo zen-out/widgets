@@ -1,6 +1,11 @@
 const fs = require("fs");
 const params = { bg: "" };
 var settings = {
+  100: "#6CCF64",
+  90: "#52A34E",
+  80: "#2E6B38",
+  70: "#1F432B",
+  60: "#171B21",
   year: 2023,
   goalPoundsPerWeek: 1.5,
   debug: true,
@@ -88,17 +93,17 @@ function getScriptableDate(getFilePath, monthAndDay) {
     }
   }
 }
-let getScriptableDatePath = getScriptableDate(false);
+// let getScriptableDatePath = getScriptableDate(false);
 
-let getScriptableDatePath2 = getScriptableDate(true);
-console.log(getScriptableDatePath, getScriptableDatePath2);
+// let getScriptableDatePath2 = getScriptableDate(true);
+// console.log(getScriptableDatePath, getScriptableDatePath2);
 
-console.log("2023-09-13 /2023/September/2023-09-13");
+// console.log("2023-09-13 /2023/September/2023-09-13");
 
-let test = getScriptableDate(false, "9/11");
+// let test = getScriptableDate(false, "9/11");
 
-let test2 = getScriptableDate(true, "9/11");
-console.log(test, test2);
+// let test2 = getScriptableDate(true, "9/11");
+// console.log(test, test2);
 
 function scriptableGetFile(file, monthAndDate) {
   let returnValue = 0;
@@ -126,7 +131,6 @@ function scriptableGetFile(file, monthAndDate) {
     // kj
     returnValue = returnValue * 0.239006;
   }
-  console.log(returnValue);
   return returnValue;
 }
 
@@ -163,7 +167,6 @@ function proteinGoal(monthAndDay) {
   let weightInPounds = scriptableGetFile("Weight & Body Mass", monthAndDay);
   let weightInKg = weightInPounds * 0.45359237;
   let idealProtein = weightInKg * 1.5;
-  console.log(idealProtein, proteinToday, "what");
   if (proteinToday >= idealProtein) {
     return 10;
   } else {
@@ -176,14 +179,7 @@ function getDailyPercentage(monthAndDay) {
   let protein = proteinGoal(monthAndDay);
   let sum = daily + protein;
   if (typeof sum === "number") {
-    let colors = {
-      100: "#6CCF64",
-      90: "#52A34E",
-      80: "#2E6B38",
-      70: "#1F432B",
-      60: "#171B21",
-    };
-    return colors[sum];
+    return settings[sum];
   } else {
     console.log("Get Daily Percentage");
     return "#171B21";
