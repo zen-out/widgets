@@ -38,69 +38,8 @@ var settings = {
   individualDateTargets: false,
   flipped: params.flipped ? params.flipped : false,
 };
-function getScriptableDate(getFilePath, monthAndDay) {
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  let date;
-  if (monthAndDay) {
-    let splitted = monthAndDay.split("/");
-    let day;
-    let m;
-    if (!monthAndDay.includes("/")) {
-      day = parseInt(monthAndDay);
-      m = 9;
-    } else {
-      splitted = monthAndDay.split("/");
-      day = parseInt(splitted[1]);
-      m = parseInt(splitted[0]);
-    }
-    if (day < 10) {
-      day = "0" + day;
-    }
-    if (m < 10) {
-      m = "0" + m;
-    }
-    let month = months[m - 1];
-    const formatDate = settings.year + "-" + m + "-" + day;
 
-    if (getFilePath) {
-      return "/" + settings.year + "/" + month + "/" + formatDate;
-    } else {
-      return settings.year + "-" + m + "-" + day;
-    }
-  } else {
-    date = new Date();
-    let y = String(date.getFullYear());
-    let m = date.getMonth() + 1;
-    if (m < 10) {
-      m = "0" + m;
-    }
-    let month = months[m - 1];
-    let day = date.getDate();
-    if (day < 10) {
-      day = "0" + day;
-    }
-
-    const formatDate = y + "-" + m + "-" + day;
-    if (getFilePath) {
-      return "/" + y + "/" + month + "/" + formatDate;
-    } else {
-      return y + "-" + m + "-" + day;
-    }
-  }
-}
+/*
 function scriptableGetFile(file, monthAndDate) {
   let returnValue = 0;
   // const BM = files.bookmarkedPath("Auto Export");
@@ -202,3 +141,4 @@ let percent = getDailyPercentage("9/6");
 console.log(percent);
 
 module.exports = { getDailyPercentage, scriptableGetFile };
+*/

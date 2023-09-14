@@ -8,7 +8,7 @@ var settings = {
   F: "#171B21",
   year: 2023,
   month: 9,
-  goalPoundsPerWeek: 1.5,
+  goalPoundsPerWeek: 2,
   debug: true,
   calendarApp: "calshow",
   backgroundImage: params.bg ? params.bg : "transparent.jpg",
@@ -42,6 +42,73 @@ var settings = {
 };
 var settings_default = settings;
 
+
+
+
+function getScriptableDate(getFilePath, monthAndDay) {
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  let date;
+  if (monthAndDay) {
+    let day;
+    let m;
+    if (!monthAndDay.includes("/") || typeof monthAndDay === "number") {
+      day = parseInt(monthAndDay);
+      m = settings.month;
+    } else {
+      splitted = monthAndDay.split("/");
+      day = parseInt(splitted[1]);
+      m = parseInt(splitted[0]);
+    }
+
+    if (day < 10) {
+      day = "0" + day;
+    }
+    if (m < 10) {
+      m = "0" + m;
+    }
+    let month = months[m - 1];
+    const formatDate = settings.year + "-" + m + "-" + day;
+
+    if (getFilePath) {
+      return "/" + settings.year + "/" + month + "/" + formatDate;
+    } else {
+      return settings.year + "-" + m + "-" + day;
+    }
+  } else {
+    date = new Date();
+    var y = String(date.getFullYear());
+    var m = date.getMonth() + 1;
+    if (m < 10) {
+      m = "0" + m;
+    }
+    var month = months[m - 1];
+    var day = date.getDate();
+    if (day < 10) {
+      day = "0" + day;
+    }
+
+    const formatDate = y + "-" + m + "-" + day;
+    if (getFilePath) {
+      return "/" + y + "/" + month + "/" + formatDate;
+    } else {
+      return y + "-" + m + "-" + day;
+    }
+  }
+}
+
 function scriptableGetFile(file, monthAndDate) {
   let files = FileManager.local();
   const iCloudInUse = files.isFileStoredIniCloud(module.filename);
@@ -53,8 +120,14 @@ function scriptableGetFile(file, monthAndDate) {
   let healthPath = files.joinPath(BM, datePath);
   let readFile = files.joinPath(
     healthPath,
-    String(`${file}-${getScriptableDatePath}.csv`)
+    String(`${file}-${getScriptableDatePath} 2.csv`)
   );
+  if (!files.fileExists(readFile)) {
+    readFile = files.joinPath(
+      healthPath,
+      String(`${file}-${getScriptableDatePath}.csv`)
+    );
+  }
   if (files.fileExists(readFile)) {
     if (files.isFileDownloaded(readFile)) {
       var fileData = files.readString(readFile);
@@ -65,14 +138,13 @@ function scriptableGetFile(file, monthAndDate) {
         if (!isNaN(eachNum)) {
           returnValue += eachNum;
         }
-      }
+      console.log(returnValue)
       if (file.includes("Weight") && returnValue < 100) {
         returnValue = returnValue * 2.20462;
       } else if (file.includes("Dietary") && returnValue > 2500) {
+        console.log(returnValue)
         returnValue = returnValue * 0.239006;
       }
-    } else {
-      console.log(`file not downloaded: ${readFile}`);
     }
     if (file.includes("Weight") && returnValue < 100) {
       returnValue = returnValue * 2.20462;
@@ -80,7 +152,7 @@ function scriptableGetFile(file, monthAndDate) {
       returnValue = returnValue * 0.239006;
     }
   } else {
-    returnValue = "--";
+    returnValue = "--"; 
   }
   return returnValue;
 }
@@ -96,11 +168,14 @@ function calculateCaloricIntake(monthAndDay) {
   let caloriesNeededForGoal = settings.goalPoundsPerWeek * 3500;
   let dailyCaloricDeficit = caloriesNeededForGoal / 7;
   let allowedCalories = totalCaloriesBurned - dailyCaloricDeficit;
+
   return calculatePercentage(caloriesToday, allowedCalories);
 }
 function calculatePercentage(caloriesConsumed, allowedCalories) {
   let percentageConsumed = caloriesConsumed / allowedCalories;
-  if (percentageConsumed <= 1.0) {
+  if (isNaN(percentageConsumed)) {
+    return 40;
+  } else if (percentageConsumed <= 1.0) {
     return 100;
   } else if (percentageConsumed <= 1.1) {
     return 80;
@@ -128,6 +203,7 @@ function getDailyPercentage(monthAndDay) {
   let daily = calculateCaloricIntake(monthAndDay);
   let protein = proteinGoal(monthAndDay);
   let sum = daily + protein;
+  
   if (typeof sum === "number") {
     if (sum > 91) {
       return settings.A;
@@ -147,6 +223,7 @@ function getDailyPercentage(monthAndDay) {
     return settings.F;
   }
 }
+
 
 // src/setWidgetBackground.ts
 function setWidgetBackground(widget, imageName) {
@@ -801,6 +878,30 @@ var buildWidget_default = buildWidget;
 
 // src/index.ts
 async function main() {
+  let files = FileManager.iCloud()
+  for (let j = 1; j < 32; j++) {
+  
+  const BM = files.bookmarkedPath("Auto Export");
+   let getString = j.toString()
+  let datePath = getScriptableDate(true, getString);
+ 
+  let getScriptableDatePath = getScriptableDate(false, getString);
+  let healthPath = files.joinPath(BM, datePath);
+  
+  let getFiles = ["Protein", "Weight & Body Mass", "Active Energy", "Dietary Energy", "Basal Energy Burned"]
+  for (let i = 0; i < getFiles.length; i++) {
+    let file = getFiles[i];
+    let readFile = files.joinPath(
+    healthPath,
+    String(`${file}-${getScriptableDatePath}.csv`)
+  );
+  if (files.fileExists(readFile)) {
+    if (!files.isFileDownloaded(readFile)) {
+  await files.downloadFileFromiCloud(readFile) }}
+  }
+  
+}
+  
   if (config.runsInWidget) {
     const widget = await buildWidget_default(settings_default);
     Script.setWidget(widget);
