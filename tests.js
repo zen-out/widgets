@@ -5,7 +5,7 @@ const {
   proteinGoal,
   getCalorieGrade,
 } = require("./src/getCalorieGrade");
-const { scriptableGetFile } = require("./src/fsGetFile.js");
+const { getScriptableFile } = require("./src/fsGetFile.js");
 function dateTest() {
   let test1 = getScriptableDate(true, "9");
   console.debug("should be sept 9", test1);
@@ -27,20 +27,34 @@ function dateTest() {
 dateTest();
 function getFileTest(monthAndDay) {
   console.log("month and day", monthAndDay);
-  let activeEnergyCalories = scriptableGetFile("Active Energy", monthAndDay);
+  let activeEnergyCalories = getScriptableFile("Active Energy", monthAndDay);
   console.log("active energy ", activeEnergyCalories);
-  let caloriesToday = scriptableGetFile("Dietary Energy", monthAndDay); // if more than 2500 then its kj
+  let caloriesToday = getScriptableFile("Dietary Energy", monthAndDay); // if more than 2500 then its kj
   console.log("calories", caloriesToday);
-  let restingEnergyCalories = scriptableGetFile(
+  let restingEnergyCalories = getScriptableFile(
     "Basal Energy Burned",
     monthAndDay
   );
   console.debug("resting", restingEnergyCalories);
-  let proteinToday = scriptableGetFile("Protein", monthAndDay);
+  let proteinToday = getScriptableFile("Protein", monthAndDay);
   console.debug("protein", proteinToday);
-  let weightInPounds = scriptableGetFile("Weight & Body Mass", monthAndDay);
+  let weightInPounds = getScriptableFile("Weight & Body Mass", monthAndDay);
   console.debug("weight", weightInPounds);
 }
 getFileTest("11");
-function calorieTest() {}
+
+function calorieTest() {
+  let sept6 = getCalorieGrade(6);
+  console.log(sept6, "j");
+  let sept7 = getCalorieGrade("9/7");
+  console.log(sept7);
+  let sept9 = getCalorieGrade("9");
+  console.log(sept9);
+  let sept10 = getCalorieGrade("10");
+  console.log(sept10);
+  let sept11 = getCalorieGrade("11");
+  console.log(sept11);
+  let sept12 = getCalorieGrade(12);
+  console.log(sept12);
+}
 calorieTest();

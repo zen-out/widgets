@@ -58,10 +58,16 @@ let reference = {
 function writeWeightFile(obj, name) {
   let date = getFormattedDate(obj.Date, true);
   let fileDate = getFormattedDate(obj.Date, false);
+  let getWeight;
+  if (obj["Weight & Body Mass (kg)"]) {
+    getWeight = obj["Weight & Body Mass (kg)"];
+  } else {
+    getWeight = obj["Weight & Body Mass (kg) "];
+  }
   let selectedData = [
     {
       "Date/Time": obj.Date,
-      "Weight & Body Mass (kg)": obj["Weight & Body Mass (kg)"],
+      "Weight & Body Mass (kg)": getWeight,
       Source: "Lesley’s Apple Watch",
     },
   ];
@@ -75,9 +81,7 @@ function writeWeightFile(obj, name) {
 
   csvWriter
     .writeToPath(filePath, selectedData, { headers: true })
-    .on("finish", function () {
-      console.log("Done writing to file");
-    })
+    .on("finish", function () {})
     .on("error", (err) => console.error(err));
 }
 function writeProteinFile(obj, name) {
@@ -100,9 +104,7 @@ function writeProteinFile(obj, name) {
 
   csvWriter
     .writeToPath(filePath, selectedData, { headers: true })
-    .on("finish", function () {
-      console.log("Done writing to file");
-    })
+    .on("finish", function () {})
     .on("error", (err) => console.error(err));
 }
 function writeDietaryFile(obj, name) {
@@ -125,9 +127,7 @@ function writeDietaryFile(obj, name) {
 
   csvWriter
     .writeToPath(filePath, selectedData, { headers: true })
-    .on("finish", function () {
-      console.log("Done writing to file");
-    })
+    .on("finish", function () {})
     .on("error", (err) => console.error(err));
 }
 function writeBasalFile(obj, name) {
@@ -150,9 +150,7 @@ function writeBasalFile(obj, name) {
 
   csvWriter
     .writeToPath(filePath, selectedData, { headers: true })
-    .on("finish", function () {
-      console.log("Done writing to file");
-    })
+    .on("finish", function () {})
     .on("error", (err) => console.error(err));
 }
 function writeActivityFile(obj, name) {
@@ -175,15 +173,14 @@ function writeActivityFile(obj, name) {
 
   csvWriter
     .writeToPath(filePath, selectedData, { headers: true })
-    .on("finish", function () {
-      console.log("Done writing to file");
-    })
+    .on("finish", function () {})
     .on("error", (err) => console.error(err));
 }
 async function processData() {
   let data = await getData();
   for (let i = 0; i < data.length; i++) {
     let obj = data[i];
+    // console.log(obj);
     writeActivityFile(obj);
     writeBasalFile(obj);
     writeProteinFile(obj);

@@ -71,7 +71,7 @@ let test = getScriptableDate(false, "9/11");
 let test2 = getScriptableDate(true, "9/11");
 console.log(test, test2);
 
-function scriptableGetFile(file, monthAndDate) {
+function getScriptableFile(file, monthAndDate) {
   let returnValue = 0;
   const BM = files.bookmarkedPath("Auto Export");
   let datePath = getScriptableDate(true, monthAndDate);
@@ -105,9 +105,9 @@ function scriptableGetFile(file, monthAndDate) {
 }
 
 function calculateCaloricIntake(goalPoundsPerWeek, monthAndDay) {
-  let activeEnergyCalories = scriptableGetFile("Active Energy", monthAndDay);
-  let caloriesToday = scriptableGetFile("Dietary Energy", monthAndDay); // if more than 2500 then its kj
-  let restingEnergyCalories = scriptableGetFile(
+  let activeEnergyCalories = getScriptableFile("Active Energy", monthAndDay);
+  let caloriesToday = getScriptableFile("Dietary Energy", monthAndDay); // if more than 2500 then its kj
+  let restingEnergyCalories = getScriptableFile(
     "Basal Energy Burned",
     monthAndDay
   );
@@ -123,8 +123,8 @@ function calculateCaloricIntake(goalPoundsPerWeek, monthAndDay) {
 }
 
 function proteinGoal(monthAndDay) {
-  let proteinToday = scriptableGetFile("Protein", monthAndDay);
-  let weightInPounds = scriptableGetFile("Weight & Body Mass", monthAndDay); // if less than a hundred, then it's kg
+  let proteinToday = getScriptableFile("Protein", monthAndDay);
+  let weightInPounds = getScriptableFile("Weight & Body Mass", monthAndDay); // if less than a hundred, then it's kg
   console.log(weightInPounds, "here");
   let weightInKg = weightInPounds * 0.45359237;
   let idealProtein = weightInKg * 1.5;

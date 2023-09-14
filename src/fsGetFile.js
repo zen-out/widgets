@@ -1,6 +1,7 @@
 const fs = require("fs");
 const { getScriptableDate } = require("./getScriptableDate");
-function scriptableGetFile(file, monthAndDate) {
+
+function getScriptableFile(file, monthAndDate) {
   let returnValue = 0;
   // const BM = files.bookmarkedPath("Auto Export");
   let getScriptableDatePath;
@@ -43,10 +44,9 @@ function scriptableGetFile(file, monthAndDate) {
   if (file.includes("Weight") && returnValue < 100) {
     returnValue = returnValue * 2.20462;
   } else if (file.includes("Dietary") && returnValue > 2100) {
-    // kj
     returnValue = returnValue * 0.239006;
   }
   return returnValue;
 }
 
-module.exports = { scriptableGetFile };
+module.exports = { getScriptableFile };
