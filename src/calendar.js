@@ -317,12 +317,21 @@ function calculateIntensity(eventCounts) {
 }
 var countEvents_default = countEvents;
 
+function incrementMonth(getDate) {
+  let splitted = getDate.split("/");
+  let month = parseInt(splitted[0]);
+  let officialMonth = month + 1;
+  let returnString = officialMonth + "/" + splitted[1];
+  return returnString;
+}
 // src/createDateImage.ts
 function createDateImage(
   text,
-  { backgroundColor, textColor, intensity, toFullSize }
+  { backgroundColor, textColor, intensity, toFullSize, actualDate }
 ) {
-  let percent = getCalorieGrade(text);
+  // not sure why we had to increment month here
+  let getDate = incrementMonth(actualDate);
+  let percent = getCalorieGrade(getDate);
   let actualPercent = settings_default[percent];
   const size = toFullSize ? 50 : 35;
   const drawing = new DrawContext();
@@ -455,6 +464,7 @@ async function buildCalendarView(date, stack, settings2) {
             textColor: settings2.todayTextColor,
             intensity: 1,
             toFullSize: true,
+            actualDate: calendar[i][j],
           });
           dayStack.addImage(highlightedDate);
         } else {
@@ -481,6 +491,7 @@ async function buildCalendarView(date, stack, settings2) {
               eventCounts.get(calendar[i][j]) * 0.5
             : 0,
           toFullSize,
+          actualDate: calendar[i][j],
         });
         dayStack.addImage(dateImage);
       } else {

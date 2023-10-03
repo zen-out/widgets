@@ -1,6 +1,5 @@
-const { getScriptableDate } = require("./getScriptableDate");
+const { getScriptableDate } = importModule("getScriptableDate");
 
-// copy from here
 const BOOKMARK = "Auto Export";
 function getScriptableFile(file, monthAndDate) {
   let files = FileManager.local();

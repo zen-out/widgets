@@ -1,12 +1,12 @@
 const { getScriptableFile } = require("./fsGetFile.js");
-// const { getScriptableFile } = require("./getScriptableFile.js");
+// const { getScriptableFile } = importModule("getScriptableFile");
 
-// copy from here
+// copy from here// copy from here
 const GOAL_POUNDS = 1.7;
 
-function calculateCaloricIntake(getObject) {
-  let activeEnergyCalories = getObject.activeCalories;
-  let caloriesToday = getObject.calories;
+function calculateCaloricIntake(monthAndDay) {
+  let activeEnergyCalories = getScriptableFile("Active Energy", monthAndDay);
+  let caloriesToday = getScriptableFile("Dietary Energy", monthAndDay); // if more than 2500 then its kj
   if (caloriesToday == 0) {
     caloriesToday = 2000;
   }
@@ -14,6 +14,9 @@ function calculateCaloricIntake(getObject) {
     "Basal Energy Burned",
     monthAndDay
   );
+  if (restingEnergyCalories < 1400) {
+    restingEnergyCalories = 1400;
+  }
   let totalCaloriesBurned = restingEnergyCalories + activeEnergyCalories;
   let caloriesNeededForGoal = GOAL_POUNDS * 3500;
   let dailyCaloricDeficit = caloriesNeededForGoal / 7;
@@ -39,9 +42,9 @@ function calculatePercentage(caloriesConsumed, allowedCalories) {
   }
 }
 
-function proteinGoal(getObject) {
-  let proteinToday = getObject.protein;
-  let weightInPounds = getObject.weight;
+function proteinGoal(monthAndDay) {
+  let proteinToday = getScriptableFile("Protein", monthAndDay);
+  let weightInPounds = getScriptableFile("Weight & Body Mass", monthAndDay);
   let weightInKg = weightInPounds * 0.45359237;
   let idealProtein = weightInKg * 1.5;
   if (proteinToday >= idealProtein) {
@@ -51,9 +54,8 @@ function proteinGoal(getObject) {
   }
 }
 function getCalorieGrade(monthAndDay) {
-  // let getObject =
-  let daily = calculateCaloricIntake(getObject);
-  let protein = proteinGoal(getObject);
+  let daily = calculateCaloricIntake(monthAndDay);
+  let protein = proteinGoal(monthAndDay);
   let sum = daily + protein;
   console.log(sum);
   if (typeof sum === "number") {
@@ -75,7 +77,7 @@ function getCalorieGrade(monthAndDay) {
     return "F";
   }
 }
-console.log(getCalorieGrade(6));
+// console.log(getCalorieGrade(11));
 
 module.exports = {
   calculateCaloricIntake,
